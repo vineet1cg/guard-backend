@@ -4,15 +4,15 @@ import mongoose from "mongoose";
 
 /**
  * Analysis Controller
- * EDUCATIONAL SIMULATION ONLY
- * Hardened for production safety
+ * EDUCATIONAL & ETHICAL SIMULATION ONLY
+ * SAFE FOR HACKATHON / DEMO / MVP
  */
 
 /* ------------------------------------------------------------------ */
-/* Utils */
+/* Constants & Utils */
 /* ------------------------------------------------------------------ */
 
-const ALLOWxD_INPUT_TYPES = new Set(["code", "api", "sql", "config"]);
+const ALLOWED_INPUT_TYPES = new Set(["code", "api", "sql", "config"]);
 const MAX_CONTENT_LENGTH = 100_000;
 
 const safeInt = (value, fallback) => {
@@ -21,14 +21,15 @@ const safeInt = (value, fallback) => {
 };
 
 /* ------------------------------------------------------------------ */
-/* Simulated AI Engine (safe + deterministic bounds) */
+/* Simulated AI Engine (SAFE / NON-EXECUTABLE) */
 /* ------------------------------------------------------------------ */
 
 const simulateAnalysis = (inputType, content) => {
   const processingTime = Math.floor(Math.random() * 300) + 200;
 
   const baseRisk = Math.floor(Math.random() * 40) + 30;
-  const contentRisk = content.length > 500 ? 15 : content.length > 200 ? 10 : 5;
+  const contentRisk =
+    content.length > 500 ? 15 : content.length > 200 ? 10 : 5;
 
   const overallRiskScore = Math.min(95, baseRisk + contentRisk);
 
@@ -45,19 +46,20 @@ const generateVulnerabilities = (inputType, riskScore) => {
       {
         name: "Hardcoded Credentials",
         severity: "Critical",
-        description: "Sensitive credentials appear hardcoded",
+        description: "Sensitive credentials appear hardcoded in source code",
         secureCodeFix: "const apiKey = process.env.API_KEY;",
       },
       {
         name: "SQL Injection",
         severity: "Critical",
-        description: "Dynamic SQL without parameterization",
-        secureCodeFix: 'db.query("SELECT * FROM users WHERE id = ?", [id]);',
+        description: "Dynamic SQL query without parameterization",
+        secureCodeFix:
+          'db.query("SELECT * FROM users WHERE id = ?", [id]);',
       },
       {
-        name: "XSS",
+        name: "Cross-Site Scripting (XSS)",
         severity: "High",
-        description: "Unsanitized user input rendered to DOM",
+        description: "Unsanitized user input rendered into the DOM",
         secureCodeFix: "element.textContent = userInput;",
       },
     ],
@@ -65,13 +67,13 @@ const generateVulnerabilities = (inputType, riskScore) => {
       {
         name: "Missing Authentication",
         severity: "Critical",
-        description: "Endpoint lacks authentication",
+        description: "API endpoint is accessible without authentication",
         secureCodeFix: "router.use(authenticateToken);",
       },
       {
         name: "Broken Access Control",
         severity: "High",
-        description: "Authorization checks missing",
+        description: "Authorization checks are missing",
         secureCodeFix:
           "if (resource.userId !== req.user.id) return res.sendStatus(403);",
       },
@@ -80,7 +82,7 @@ const generateVulnerabilities = (inputType, riskScore) => {
       {
         name: "SQL Injection",
         severity: "Critical",
-        description: "Unsafe SQL construction",
+        description: "Unsafe SQL query construction detected",
         secureCodeFix:
           'cursor.execute("SELECT * FROM users WHERE email = %s", [email]);',
       },
@@ -89,7 +91,7 @@ const generateVulnerabilities = (inputType, riskScore) => {
       {
         name: "Exposed Secrets",
         severity: "Critical",
-        description: "Secrets found in config",
+        description: "Sensitive secrets found in configuration files",
         secureCodeFix: "API_KEY=${API_KEY}",
       },
     ],
@@ -114,7 +116,10 @@ export const analyzeCode = async (req, res) => {
     const userId = req.userId;
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     if (!inputType || !content) {
@@ -149,7 +154,10 @@ export const analyzeCode = async (req, res) => {
       analysisDate: new Date(),
     });
 
-    await User.updateOne({ _id: userId }, { $inc: { analysisCount: 1 } });
+    await User.updateOne(
+      { _id: userId },
+      { $inc: { analysisCount: 1 } }
+    );
 
     res.json({
       success: true,
@@ -161,7 +169,8 @@ export const analyzeCode = async (req, res) => {
         analysisDate: analysis.analysisDate,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("Analysis error:", error);
     res.status(500).json({
       success: false,
       message: "Analysis failed",
@@ -207,7 +216,8 @@ export const getAnalysisHistory = async (req, res) => {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("History error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch history",
@@ -221,10 +231,16 @@ export const getAnalysisById = async (req, res) => {
     const userId = req.userId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid analysis ID",
+      });
     }
 
-    const analysis = await Analysis.findOne({ _id: id, userId }).lean();
+    const analysis = await Analysis.findOne({
+      _id: id,
+      userId,
+    }).lean();
 
     if (!analysis) {
       return res.sendStatus(404);
@@ -241,7 +257,8 @@ export const getAnalysisById = async (req, res) => {
         processingTime: analysis.processingTime,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("Fetch analysis error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch analysis",

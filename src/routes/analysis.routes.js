@@ -4,9 +4,8 @@ import rateLimit from "express-rate-limit";
 import {
   analyzeCode,
   getAnalysisHistory,
-  getAnalysisStats,
   getAnalysisById,
-} from "..analysis.controller.js";
+} from "../controllers/analysis.controller.js";
 import authenticateToken from "../middleware/auth.middleware.js";
 
 const router = express.Router();
