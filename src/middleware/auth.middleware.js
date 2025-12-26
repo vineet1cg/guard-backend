@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import User from "../models/User.js";
+import User from "../models/user.model.js";
 
 /**
  * JWT Authentication Middleware
