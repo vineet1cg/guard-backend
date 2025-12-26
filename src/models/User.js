@@ -94,14 +94,6 @@ userSchema.methods.completeOnboarding = async function () {
   }
 };
 
-/* ------------------------------------------------------------------ */
-/* Indexes */
-/* ------------------------------------------------------------------ */
-
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
-userSchema.index({ createdAt: -1 });
-
 const User = mongoose.model("User", userSchema);
 
 export default User;

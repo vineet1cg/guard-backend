@@ -42,7 +42,6 @@ router.post("/", analyzeLimiter, analyzeCode);
 
 // Read-only endpoints
 router.get("/history", readLimiter, getAnalysisHistory);
-router.get("/stats", readLimiter, getAnalysisStats);
 router.get("/:id", readLimiter, getAnalysisById);
 
 export default router;
