@@ -9,9 +9,9 @@ import { calculateRiskScore } from "../../demo/security-engine/riskEngine.js";
 import { generateAttackerView } from "../../demo/security-engine/attackerView/attackerView.js";
 import { generateDefenderFixes } from "../../demo/security-engine/defenderView/defenderEngine.js";
 import { generateSimulatedPayloads } from "../../demo/security-engine/payloads/payloadEngine.js";
-import { generateImpactAnalysis } from "../../demo/security-engine/impactEngine.js";
-import { generateSummary } from "../../demo/security-engine/summaryEngine.js";
-import { enforceEthicalRules } from "../../demo/security-engine/guardrails/ethicalGuard.js";
+import { calculateImpact } from "../../demo/security-engine/impactEngine.js";
+import { buildSummary } from "../../demo/security-engine/summaryEngine.js";
+import { runEthicalSecurityAnalysis } from "../../demo/security-engine/guardrails/ethicalGuard.js";
 // --------------------------------------------------
 // Constants
 // --------------------------------------------------
@@ -96,13 +96,13 @@ export const analyzeCode = async (req, res) => {
     const simulatedPayloads = generateSimulatedPayloads(vulnerabilities);
 
     // feature 7 -> impact analysis
-    const impactAnalysis = generateImpactAnalysis(
+    const impactAnalysis = calculateImpact(
       vulnerabilities,
       engineOutput.normalizedInput
     );
 
     // feature 8 summary
-    const summary = generateSummary({
+    const summary = buildSummary({
       vulnerabilities,
       overallRiskScore,
       attackerView,
@@ -111,7 +111,7 @@ export const analyzeCode = async (req, res) => {
       impactAnalysis,
     });
   // feature 9 read only enforcement
-  const { safeVulns, disclaimer } = enforceEthicalRules(
+  const { safeVulns, disclaimer } = runEthicalSecurityAnalysis(
     engineOutput.normalizedInput,
     vulnerabilities
   );

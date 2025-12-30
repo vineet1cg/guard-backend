@@ -4,10 +4,14 @@
  * Routes input to appropriate detector group
  */
 
-import { sqlInjection } from "./detectors/sqlInjection.js";
-import { xss } from "./detectors/xss.js";
-import { hardcodedSecrets } from "./detectors/hardcodedSecrets.js";
+import { detectSQLInjection } from "./detectors/sqlInjection.js";
+import { detectXSS } from "./detectors/xss.js";
+import { detectHardcodedSecrets } from "./detectors/hardcodedSecrets.js";
 
 export function routeInput(code) {
-  return [...sqlInjection(code), ...xss(code), ...hardcodedSecrets(code)];
+  return [
+    ...detectSQLInjection(code),
+    ...detectXSS(code),
+    ...detectHardcodedSecrets(code),
+  ];
 }

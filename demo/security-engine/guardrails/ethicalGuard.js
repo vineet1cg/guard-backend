@@ -4,8 +4,8 @@ import { runOWASPDetections } from "../owaspEngine.js";
 import { calculateRiskScore } from "../riskEngine.js";
 import { generateAttackerView } from "../attackerView/attackerView.js";
 import { generateDefenderFixes } from "../defenderView/defenderEngine.js";
-import { generateImpactAnalysis } from "../impactEngine.js";
-import { generateSummary } from "../summaryEngine.js";
+import { calculateImpact } from "../impactEngine.js";
+import { buildSummary } from "../summaryEngine.js";
 import { generateSimulatedPayloads } from "../payloads/payloadEngine.js";
 import { measureTime } from "../utils/timers.js";
 
@@ -45,12 +45,9 @@ export function runEthicalSecurityAnalysis({ inputType, content, language }) {
   const simulatedPayloads = generateSimulatedPayloads(vulnerabilities);
 
   // 7️⃣ Impact & summary
-  const impactAnalysis = generateImpactAnalysis(
-    vulnerabilities,
-    normalizedInput
-  );
+  const impactAnalysis = calculateImpact(vulnerabilities, normalizedInput);
 
-  const summary = generateSummary({
+  const summary = buildSummary({
     vulnerabilities,
     overallRiskScore,
     attackerView,

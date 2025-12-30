@@ -12,7 +12,7 @@ import { runOWASPDetections } from "./owaspEngine.js";
 import { calculateImpact } from "./impactEngine.js";
 import { calculateRiskScore } from "./riskEngine.js";
 import { buildSummary } from "./summaryEngine.js";
-import { generateSimulatedPayloads } from "./payloads/payloads.js";
+import { generateSimulatedPayloads } from "./payloads/payloadEngine.js";
 
 export function analyzeInput({ code, inputType = "code" }) {
   const validation = validateInput({ inputType, content: code });
