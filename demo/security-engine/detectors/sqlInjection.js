@@ -1,25 +1,35 @@
+/**
+ * Detects potential SQL Injection vulnerabilities in code input.
+ * This is a static pattern-based detection and does not execute queries.
+ */
 export function detectSQLInjection(normalizedInput) {
-  if (normalizedInput.type !== "code") return [];
+  if (
+    !normalizedInput ||
+    normalizedInput.type !== "code" ||
+    !Array.isArray(normalizedInput.blocks)
+  ) {
+    return [];
+  }
 
   const issues = [];
-  const blocks = normalizedInput.blocks || [];
 
-  const sqlKeywords = /(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)/i;
-  const userInput = /req\.(query|body|params|headers|cookies)/;
+  const sqlKeywords = /\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)\b/i;
+  const userInput = /\breq\.(query|body|params|headers|cookies)\b/;
   const concat = /(\+)|(`.*\$\{.*\}`)/;
 
-  for (const block of blocks) {
-    const code = block.content;
+  for (const block of normalizedInput.blocks) {
+    const code = block?.content;
+    if (!code || typeof code !== "string") continue;
 
     if (sqlKeywords.test(code) && userInput.test(code) && concat.test(code)) {
       issues.push({
         type: "SQL Injection",
-        severity: "Critical",
+        severity: "CRITICAL", // ✅ uppercase, system-safe
         owasp: "A03:2021 - Injection",
         description:
-          "SQL query is constructed using string concatenation with user-controlled input, allowing attackers to manipulate query logic.",
+          "SQL queries are constructed using string concatenation with user-controlled input, which may allow attackers to manipulate query logic.",
         recommendation:
-          "Use parameterized queries or prepared statements instead of string concatenation.",
+          "Use parameterized queries or prepared statements provided by the database driver.",
         location: block.location || null,
       });
     }

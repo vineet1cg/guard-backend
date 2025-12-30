@@ -1,36 +1,71 @@
 /**
  * IMPACT ENGINE
  * -------------
- * Translates vulnerabilities into real-world impact
+ * Describes potential impact of detected vulnerabilities.
+ * This engine is descriptive only and does NOT execute attacks.
  */
 
-export function calculateImpact(vulnerabilities = []) {
+export function calculateImpact(vulnerabilities = [], normalizedInput) {
+  if (!Array.isArray(vulnerabilities)) {
+    return [];
+  }
+
   return vulnerabilities.map((vuln) => {
-    let impact = "";
+    const type = vuln?.type || "UNKNOWN";
+    const severity = vuln?.severity || "LOW";
 
-    switch (vuln.type) {
+    switch (type) {
       case "SQL Injection":
-        impact =
-          "Attacker may read, modify, or delete database records. In worst cases, full database compromise.";
-        break;
+        return {
+          vulnerability: "SQL Injection",
+          severity,
+          impactLevel: "HIGH",
+          businessImpact:
+            "Unauthorized access, modification, or destruction of sensitive database records.",
+          technicalImpact:
+            "Manipulation of SQL query execution through unvalidated user input.",
+          likelihood:
+            "HIGH when user input is directly concatenated into queries.",
+        };
 
-      case "Reflected XSS":
-        impact =
-          "Attacker may execute arbitrary JavaScript in victim browsers, steal sessions, or deface pages.";
-        break;
+      case "Cross-Site Scripting (XSS)":
+        return {
+          vulnerability: "Cross-Site Scripting (XSS)",
+          severity,
+          impactLevel: "MEDIUM",
+          businessImpact:
+            "Session hijacking, credential theft, or reputational damage.",
+          technicalImpact:
+            "Execution of attacker-controlled scripts in a victim’s browser.",
+          likelihood:
+            "MEDIUM to HIGH depending on input exposure and output encoding.",
+        };
 
       case "Hardcoded Secret":
-        impact =
-          "Credential leakage may lead to unauthorized API access, cloud abuse, or service takeover.";
-        break;
+        return {
+          vulnerability: "Hardcoded Secret",
+          severity,
+          impactLevel: "HIGH",
+          businessImpact:
+            "Credential reuse leading to unauthorized access to internal or third-party systems.",
+          technicalImpact:
+            "Secrets embedded in code or configuration files exposed via repositories or logs.",
+          likelihood:
+            "HIGH if secrets are committed or deployed without rotation.",
+        };
 
       default:
-        impact = "Security weakness may degrade application trust and safety.";
+        return {
+          vulnerability: type,
+          severity,
+          impactLevel: "LOW",
+          businessImpact:
+            "Potential impact depends on how the vulnerability is exploited.",
+          technicalImpact:
+            "Technical consequences vary based on application context.",
+          likelihood:
+            "UNKNOWN until further analysis.",
+        };
     }
-
-    return {
-      ...vuln,
-      impact,
-    };
   });
 }

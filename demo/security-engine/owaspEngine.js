@@ -1,19 +1,32 @@
 /**
  * OWASP CLASSIFIER
  * ----------------
- * Maps findings to OWASP Top 10
+ * Maps detected vulnerabilities to OWASP Top 10 (2021)
+ * Classification is deterministic and descriptive only.
  */
 
 export function runOWASPDetections(vulnerabilities = []) {
+  if (!Array.isArray(vulnerabilities)) {
+    return [];
+  }
+
   return vulnerabilities.map((vuln) => {
-    let category = "A05:2021 - Security Misconfiguration";
+    let category = "A00:2021 - Unclassified";
 
-    if (vuln.type === "SQL Injection" || vuln.type.includes("XSS")) {
-      category = "A03:2021 - Injection";
-    }
+    switch (vuln.type) {
+      case "SQL Injection":
+      case "Cross-Site Scripting (XSS)":
+        category = "A03:2021 - Injection";
+        break;
 
-    if (vuln.type === "Hardcoded Secret") {
-      category = "A07:2021 - Identification and Authentication Failures";
+      case "Hardcoded Secret":
+        category =
+          "A07:2021 - Identification and Authentication Failures";
+        break;
+
+      default:
+        category = "A05:2021 - Security Misconfiguration";
+        break;
     }
 
     return {

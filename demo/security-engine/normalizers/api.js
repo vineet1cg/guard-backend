@@ -1,11 +1,21 @@
+/**
+ * Normalizes API endpoint input for static security analysis.
+ * This is a read-only normalization step.
+ */
 export function normalizeAPI(content) {
+  const safeContent =
+    typeof content === "string" ? content : String(content ?? "");
+
   return {
     type: "api",
-    raw: content,
+    raw: safeContent,
     blocks: [
       {
-        content,
-        location: null,
+        content: safeContent,
+        location: {
+          line: 1,
+          column: 1,
+        },
       },
     ],
   };

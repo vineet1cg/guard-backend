@@ -1,23 +1,41 @@
 /**
  * SUMMARY ENGINE
  * --------------
- * Aggregates vulnerability statistics
+ * Aggregates vulnerability statistics by severity.
+ * Severity values are expected to be ALL CAPS.
  */
 
 export function buildSummary(vulnerabilities = []) {
   const summary = {
     total: vulnerabilities.length,
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
+    CRITICAL: 0,
+    HIGH: 0,
+    MEDIUM: 0,
+    LOW: 0,
   };
 
+  if (!Array.isArray(vulnerabilities)) {
+    return summary;
+  }
+
   vulnerabilities.forEach((v) => {
-    if (v.severity === "Critical") summary.critical++;
-    if (v.severity === "High") summary.high++;
-    if (v.severity === "Medium") summary.medium++;
-    if (v.severity === "Low") summary.low++;
+    switch (v?.severity) {
+      case "CRITICAL":
+        summary.CRITICAL++;
+        break;
+      case "HIGH":
+        summary.HIGH++;
+        break;
+      case "MEDIUM":
+        summary.MEDIUM++;
+        break;
+      case "LOW":
+        summary.LOW++;
+        break;
+      default:
+        // ignore unknown severities
+        break;
+    }
   });
 
   return summary;

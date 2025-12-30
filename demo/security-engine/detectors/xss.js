@@ -1,25 +1,36 @@
+/**
+ * Detects potential Cross-Site Scripting (XSS) vulnerabilities in code input.
+ * This is a static, pattern-based detection and does not execute code.
+ */
 export function detectXSS(normalizedInput) {
-  if (normalizedInput.type !== "code") return [];
+  if (
+    !normalizedInput ||
+    normalizedInput.type !== "code" ||
+    !Array.isArray(normalizedInput.blocks)
+  ) {
+    return [];
+  }
 
   const issues = [];
-  const blocks = normalizedInput.blocks || [];
 
-  const userInput = /req\.(query|body|params|headers|cookies)/;
-  const htmlSink = /(res\.send|res\.write|res\.end|innerHTML|document\.write)/i;
+  const userInput = /\breq\.(query|body|params|headers|cookies)\b/;
+  const htmlSink =
+    /\b(res\.send|res\.write|res\.end|innerHTML|document\.write)\b/i;
   const concat = /(\+)|(`.*\$\{.*\}`)/;
 
-  for (const block of blocks) {
-    const code = block.content;
+  for (const block of normalizedInput.blocks) {
+    const code = block?.content;
+    if (!code || typeof code !== "string") continue;
 
     if (htmlSink.test(code) && userInput.test(code) && concat.test(code)) {
       issues.push({
         type: "Cross-Site Scripting (XSS)",
-        severity: "High",
+        severity: "HIGH", // ✅ uppercase, dashboard-safe
         owasp: "A03:2021 - Injection",
         description:
-          "User-controlled input is reflected into HTML output without sanitization, enabling script injection.",
+          "User-controlled input is reflected into HTML output without proper encoding, enabling script injection.",
         recommendation:
-          "Sanitize or encode output before rendering. Avoid direct HTML construction with user input.",
+          "Encode or sanitize output before rendering and avoid constructing HTML directly from user input.",
         location: block.location || null,
       });
     }

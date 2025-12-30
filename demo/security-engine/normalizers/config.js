@@ -1,25 +1,21 @@
+/**
+ * Normalizes configuration file input for static security analysis.
+ * This step does NOT detect vulnerabilities — it only structures input.
+ */
 export function normalizeConfig(content) {
-  const secrets = [];
-
-  const secretPatterns = [
-    /(api[_-]?key|apikey)\s*=\s*['"][^'"]+['"]/i,
-    /(secret|token|password)\s*=\s*['"][^'"]+['"]/i,
-  ];
-
-  for (const pattern of secretPatterns) {
-    if (pattern.test(content)) {
-      secrets.push(pattern.toString());
-    }
-  }
+  const safeContent =
+    typeof content === "string" ? content : String(content ?? "");
 
   return {
     type: "config",
-    raw: content,
-    secrets,
+    raw: safeContent,
     blocks: [
       {
-        content,
-        location: null,
+        content: safeContent,
+        location: {
+          line: 1,
+          column: 1,
+        },
       },
     ],
   };

@@ -1,42 +1,87 @@
 /**
  * ETHICAL GUARD SECURITY ENGINE
  * =============================
- * Entry point for all static analysis
+ * Single, authoritative entry point for static security analysis
  */
 
 import { validateInput } from "./utils/inputValidator.js";
+import { normalizeInput } from "./normalizers/index.js";
+import { runAllDetectors } from "./detectors/index.js";
+import { calculateRiskScore } from "./riskEngine.js";
+import { generateAttackerView } from "./attackerView/attackerView.js";
+import { generateDefenderFixes } from "./defenderView/defenderEngine.js";
+import { generateSimulatedPayloads } from "./payloads/payloadEngine.js";
+import { calculateImpact } from "./impactEngine.js";
+import { buildSummary } from "./summaryEngine.js";
 import { measureTime } from "./utils/timers.js";
 
-import { routeInput } from "./inputRouter.js";
-import { runOWASPDetections } from "./owaspEngine.js";
-import { calculateImpact } from "./impactEngine.js";
-import { calculateRiskScore } from "./riskEngine.js";
-import { buildSummary } from "./summaryEngine.js";
-import { generateSimulatedPayloads } from "./payloads/payloadEngine.js";
-
-export function analyzeInput({ code, inputType = "code" }) {
-  const validation = validateInput({ inputType, content: code });
-  if (!validation.valid) {
-    return { error: validation.message };
-  }
-
+export function analyzeInput({ inputType = "code", content, language }) {
   const stopTimer = measureTime();
 
-  let vulnerabilities = routeInput(code);
-  vulnerabilities = runOWASPDetections(vulnerabilities);
-  vulnerabilities = calculateImpact(vulnerabilities);
+  /* 1️⃣ Validate input */
+  const validation = validateInput({ inputType, content });
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.message,
+      processingTime: stopTimer(),
+    };
+  }
 
-  const riskScore = calculateRiskScore(vulnerabilities);
-  const summary = buildSummary(vulnerabilities);
+  /* 2️⃣ Normalize input */
+  const normalizedInput = normalizeInput(inputType, content, language);
+
+  /* 3️⃣ Detect vulnerabilities */
+  const vulnerabilities = runAllDetectors(normalizedInput);
+
+  /* 4️⃣ Risk scoring */
+  const riskScore =
+    vulnerabilities.length > 0
+      ? calculateRiskScore(vulnerabilities)
+      : 0;
+
+  /* 5️⃣ Attacker / Defender views */
+  const attackerView = generateAttackerView(
+    vulnerabilities,
+    normalizedInput
+  );
+
+  const defenderFixes = generateDefenderFixes(
+    vulnerabilities,
+    normalizedInput
+  );
+
+  /* 6️⃣ Simulated payloads (ethical) */
   const payloads = generateSimulatedPayloads(vulnerabilities);
 
-  const executionTime = stopTimer();
+  /* 7️⃣ Impact + summary */
+  const impactAnalysis = calculateImpact(
+    vulnerabilities,
+    normalizedInput
+  );
+
+  const summary = buildSummary({
+    vulnerabilities,
+    riskScore,
+    attackerView,
+    defenderFixes,
+    impactAnalysis,
+  });
 
   return {
-    executionTime,
-    riskScore,
-    summary,
+    success: true,
     vulnerabilities,
+    riskScore,
+    attackerView,
+    defenderFixes,
     payloads,
+    impactAnalysis,
+    summary,
+    processingTime: stopTimer(),
+    ethics: {
+      staticAnalysisOnly: true,
+      noExecution: true,
+      noLiveAttacks: true,
+    },
   };
 }
