@@ -1,16 +1,29 @@
 export function detectHardcodedSecrets(normalizedInput) {
-  if (normalizedInput.type !== "config") return [];
+  if (!["code", "config"].includes(normalizedInput.type)) return [];
 
-  if ((normalizedInput.secrets || []).length === 0) return [];
+  const issues = [];
+  const content = normalizedInput.raw || "";
 
-  return [
-    {
-      type: "Hardcoded Secret",
-      owasp: "A02:2021 - Cryptographic Failures",
-      severity: "High",
-      description: "Sensitive data like API keys are hardcoded.",
-      recommendation:
-        "Move secrets to environment variables or a secure vault.",
-    },
+  const patterns = [
+    /(api[_-]?key|apikey)\s*=\s*['"][^'"]{10,}['"]/i,
+    /(secret|token|password|passwd|pwd)\s*=\s*['"][^'"]{6,}['"]/i,
+    /(aws|amazon)[_-]?(secret|access)[_-]?key\s*=\s*['"][^'"]+['"]/i,
   ];
+
+  for (const pattern of patterns) {
+    if (pattern.test(content)) {
+      issues.push({
+        type: "Hardcoded Secret",
+        severity: "High",
+        owasp: "A02:2021 - Cryptographic Failures",
+        description:
+          "Sensitive credentials are hardcoded in source code or configuration files.",
+        recommendation:
+          "Move secrets to environment variables or a secure secrets manager.",
+      });
+      break;
+    }
+  }
+
+  return issues;
 }

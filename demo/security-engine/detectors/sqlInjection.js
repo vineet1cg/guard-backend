@@ -1,15 +1,29 @@
 export function detectSQLInjection(normalizedInput) {
-  if (normalizedInput.type !== "sql") return [];
+  if (normalizedInput.type !== "code") return [];
 
   const issues = [];
-  if (normalizedInput.metadata?.usesConcat) {
-    issues.push({
-      type: "SQL Injection",
-      owasp: "A03:2021 - Injection",
-      severity: "High",
-      description: "Query uses string concatenation; may allow SQL injection.",
-      recommendation: "Use parameterized queries or prepared statements.",
-    });
+  const blocks = normalizedInput.blocks || [];
+
+  const sqlKeywords = /(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)/i;
+  const userInput = /req\.(query|body|params|headers|cookies)/;
+  const concat = /(\+)|(`.*\$\{.*\}`)/;
+
+  for (const block of blocks) {
+    const code = block.content;
+
+    if (sqlKeywords.test(code) && userInput.test(code) && concat.test(code)) {
+      issues.push({
+        type: "SQL Injection",
+        severity: "Critical",
+        owasp: "A03:2021 - Injection",
+        description:
+          "SQL query is constructed using string concatenation with user-controlled input, allowing attackers to manipulate query logic.",
+        recommendation:
+          "Use parameterized queries or prepared statements instead of string concatenation.",
+        location: block.location || null,
+      });
+    }
   }
+
   return issues;
 }

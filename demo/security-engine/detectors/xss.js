@@ -2,18 +2,28 @@ export function detectXSS(normalizedInput) {
   if (normalizedInput.type !== "code") return [];
 
   const issues = [];
-  for (const block of normalizedInput.blocks || []) {
-    if (/innerHTML\s*=|document\.write\(/i.test(block.content)) {
+  const blocks = normalizedInput.blocks || [];
+
+  const userInput = /req\.(query|body|params|headers|cookies)/;
+  const htmlSink = /(res\.send|res\.write|res\.end|innerHTML|document\.write)/i;
+  const concat = /(\+)|(`.*\$\{.*\}`)/;
+
+  for (const block of blocks) {
+    const code = block.content;
+
+    if (htmlSink.test(code) && userInput.test(code) && concat.test(code)) {
       issues.push({
         type: "Cross-Site Scripting (XSS)",
+        severity: "High",
         owasp: "A03:2021 - Injection",
-        severity: "Medium",
         description:
-          "Direct assignment to innerHTML or document.write may lead to XSS.",
-        recommendation: "Use safe DOM APIs or sanitize user input.",
+          "User-controlled input is reflected into HTML output without sanitization, enabling script injection.",
+        recommendation:
+          "Sanitize or encode output before rendering. Avoid direct HTML construction with user input.",
+        location: block.location || null,
       });
-      break;
     }
   }
+
   return issues;
 }
