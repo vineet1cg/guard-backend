@@ -1,19 +1,27 @@
-import normalizeCode from "./code.js";
-import normalizeSQL from "./sql.js";
-import normalizeConfig from "./config.js";
-import normalizeAPI from "./api.js";
+import { normalizeCode } from "./code.js";
+import { normalizeSQL } from "./sql.js";
+import { normalizeConfig } from "./config.js";
+import { normalizeAPI } from "./api.js";
 
-export function normalizeInput(inputType, content) {
+export function normalizeInput(inputType, content, language) {
   switch (inputType) {
     case "code":
-      return normalizeCode(content);
+      return normalizeCode(content, language);
+
     case "sql":
       return normalizeSQL(content);
+
     case "config":
       return normalizeConfig(content);
+
     case "api":
       return normalizeAPI(content);
+
     default:
-      throw new Error("Unsupported input type");
+      return {
+        type: "unknown",
+        raw: content,
+        blocks: [],
+      };
   }
 }

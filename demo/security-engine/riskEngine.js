@@ -1,25 +1,15 @@
+import { SEVERITY_WEIGHTS } from "./utils/constants.js";
+
+/**
+ * RISK ENGINE
+ * -----------
+ * Produces a normalized risk score (0–100)
+ */
+
 export function calculateRiskScore(vulnerabilities = []) {
-  let score = 0;
+  const rawScore = vulnerabilities.reduce((sum, vuln) => {
+    return sum + (SEVERITY_WEIGHTS[vuln.severity] || 0);
+  }, 0);
 
-  for (const vuln of vulnerabilities) {
-    switch (vuln.severity) {
-      case "Critical":
-        score += 60;
-        break;
-      case "High":
-        score += 40;
-        break;
-      case "Medium":
-        score += 25;
-        break;
-      case "Low":
-        score += 10;
-        break;
-      default:
-        break;
-    }
-  }
-
-  // Cap score at 100
-  return Math.min(score, 100);
+  return Math.min(rawScore, 100);
 }

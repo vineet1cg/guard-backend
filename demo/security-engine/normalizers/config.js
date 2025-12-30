@@ -1,13 +1,26 @@
-export default function normalizeConfig(configText) {
-  const lines = configText.split("\n");
+export function normalizeConfig(content) {
+  const secrets = [];
 
-  const secrets = lines.filter((line) =>
-    /key|secret|token|password/i.test(line)
-  );
+  const secretPatterns = [
+    /(api[_-]?key|apikey)\s*=\s*['"][^'"]+['"]/i,
+    /(secret|token|password)\s*=\s*['"][^'"]+['"]/i,
+  ];
+
+  for (const pattern of secretPatterns) {
+    if (pattern.test(content)) {
+      secrets.push(pattern.toString());
+    }
+  }
 
   return {
     type: "config",
+    raw: content,
     secrets,
-    secretCount: secrets.length,
+    blocks: [
+      {
+        content,
+        location: null,
+      },
+    ],
   };
 }

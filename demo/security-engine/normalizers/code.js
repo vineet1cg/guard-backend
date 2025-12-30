@@ -1,16 +1,19 @@
-export default function normalizeCode(code, language = "unknown") {
-  const lines = code.split("\n");
+export function normalizeCode(content, language = "javascript") {
+  const lines = content.split("\n");
+
+  const blocks = lines.map((line, index) => ({
+    content: line,
+    line: index + 1,
+    location: {
+      line: index + 1,
+      column: 1,
+    },
+  }));
 
   return {
     type: "code",
-    metadata: {
-      language,
-      totalLines: lines.length,
-    },
-    blocks: lines.map((line, index) => ({
-      lineNumber: index + 1,
-      content: line.trim(),
-      isComment: line.trim().startsWith("//") || line.trim().startsWith("#"),
-    })),
+    language,
+    raw: content,
+    blocks,
   };
 }

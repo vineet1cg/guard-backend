@@ -1,10 +1,15 @@
-import { measureTime } from "./utils/timers.js";
+/**
+ * PERFORMANCE TIMER
+ * -----------------
+ * Measures analysis execution time
+ */
 
-const stop = measureTime();
+export function measureTime() {
+  const start = process.hrtime.bigint();
 
-// Run your engine logic
-const result = analyzeInput({ inputType, content });
-
-// Stop timer
-const elapsedMs = stop();
-console.log("Processing time:", elapsedMs, "ms");
+  return function stop() {
+    const end = process.hrtime.bigint();
+    const durationMs = Number(end - start) / 1_000_000;
+    return `${durationMs.toFixed(2)} ms`;
+  };
+}

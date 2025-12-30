@@ -1,10 +1,12 @@
-export default function normalizeSQL(sql) {
+export function normalizeSQL(content) {
   return {
     type: "sql",
-    metadata: {
-      usesConcat: /\+|\$\{/.test(sql),
-      isParameterized: /\?/.test(sql),
-    },
-    query: sql.trim(),
+    raw: content,
+    blocks: [
+      {
+        content,
+        location: null,
+      },
+    ],
   };
 }

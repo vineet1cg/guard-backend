@@ -1,23 +1,13 @@
-import normalizeCode from "./normalizers/code.js";
-import normalizeAPI from "./normalizers/api.js";
-import normalizeSQL from "./normalizers/sql.js";
-import normalizeConfig from "./normalizers/config.js";
+/**
+ * INPUT ROUTER
+ * ------------
+ * Routes input to appropriate detector group
+ */
 
-export function routeInput({ inputType, content, language }) {
-  switch (inputType) {
-    case "code":
-      return normalizeCode(content, language);
+import { sqlInjection } from "./detectors/sqlInjection.js";
+import { xss } from "./detectors/xss.js";
+import { hardcodedSecrets } from "./detectors/hardcodedSecrets.js";
 
-    case "api":
-      return normalizeAPI(content);
-
-    case "sql":
-      return normalizeSQL(content);
-
-    case "config":
-      return normalizeConfig(content);
-
-    default:
-      throw new Error("Unsupported input type");
-  }
+export function routeInput(code) {
+  return [...sqlInjection(code), ...xss(code), ...hardcodedSecrets(code)];
 }

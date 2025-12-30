@@ -1,63 +1,36 @@
-export function generateImpactAnalysis(vulnerabilities, normalizedInput) {
-  if (!vulnerabilities || vulnerabilities.length === 0) {
-    return {
-      technicalImpact: "No exploitable technical impact detected.",
-      dataExposure: "No sensitive data exposure identified.",
-      businessImpact: "No business impact at current risk level.",
-    };
-  }
+/**
+ * IMPACT ENGINE
+ * -------------
+ * Translates vulnerabilities into real-world impact
+ */
 
-  const impacts = {
-    technicalImpact: [],
-    dataExposure: [],
-    businessImpact: [],
-  };
+export function calculateImpact(vulnerabilities = []) {
+  return vulnerabilities.map((vuln) => {
+    let impact = "";
 
-  for (const vuln of vulnerabilities) {
     switch (vuln.type) {
       case "SQL Injection":
-        impacts.technicalImpact.push(
-          "Database queries can be manipulated by an attacker."
-        );
-        impacts.dataExposure.push(
-          "User records, credentials, or internal data may be exposed."
-        );
-        impacts.businessImpact.push(
-          "Data breach risk, regulatory penalties, and loss of user trust."
-        );
+        impact =
+          "Attacker may read, modify, or delete database records. In worst cases, full database compromise.";
         break;
 
-      case "Cross-Site Scripting (XSS)":
-        impacts.technicalImpact.push(
-          "Malicious scripts can execute in a user’s browser."
-        );
-        impacts.dataExposure.push(
-          "Session tokens or user actions may be hijacked."
-        );
-        impacts.businessImpact.push(
-          "Account compromise, phishing attacks, and brand damage."
-        );
+      case "Reflected XSS":
+        impact =
+          "Attacker may execute arbitrary JavaScript in victim browsers, steal sessions, or deface pages.";
         break;
 
       case "Hardcoded Secret":
-        impacts.technicalImpact.push(
-          "Secrets can be extracted from source or configuration."
-        );
-        impacts.dataExposure.push("API keys or credentials may be abused.");
-        impacts.businessImpact.push(
-          "Unauthorized system access and potential financial loss."
-        );
+        impact =
+          "Credential leakage may lead to unauthorized API access, cloud abuse, or service takeover.";
         break;
 
       default:
-        impacts.technicalImpact.push("Potential technical weakness detected.");
-        impacts.businessImpact.push("Unknown business risk.");
+        impact = "Security weakness may degrade application trust and safety.";
     }
-  }
 
-  return {
-    technicalImpact: [...new Set(impacts.technicalImpact)].join(" "),
-    dataExposure: [...new Set(impacts.dataExposure)].join(" "),
-    businessImpact: [...new Set(impacts.businessImpact)].join(" "),
-  };
+    return {
+      ...vuln,
+      impact,
+    };
+  });
 }

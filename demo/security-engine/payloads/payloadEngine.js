@@ -1,39 +1,52 @@
-export function generateSimulatedPayloads(vulnerabilities) {
-  const payloads = [];
+/**
+ * ETHICAL PAYLOAD GENERATOR
+ * ------------------------
+ * Generates NON-EXECUTABLE, SIMULATED payloads
+ * Used only to explain exploitability (education + awareness)
+ */
 
-  for (const vuln of vulnerabilities) {
+export function generateSimulatedPayloads(vulnerabilities = []) {
+  return vulnerabilities.map((vuln) => {
     switch (vuln.type) {
       case "SQL Injection":
-        payloads.push({
-          vulnerability: "SQL Injection",
-          simulated: true,
-          payload: "' OR '1'='1' --",
-          note: "SIMULATED payload for demonstration only. Not executed.",
-        });
-        break;
+        return {
+          type: vuln.type,
+          payloads: [
+            "' OR '1'='1",
+            "' UNION SELECT null--",
+            "'; DROP TABLE users--",
+          ],
+          note: "Payloads are simulated examples only. Never executed against live systems.",
+        };
 
-      case "Cross-Site Scripting (XSS)":
-        payloads.push({
-          vulnerability: "XSS",
-          simulated: true,
-          payload: "<script>alert('XSS')</script>",
-          note: "SIMULATED payload. Demonstrates reflective XSS pattern.",
-        });
-        break;
+      case "Reflected XSS":
+        return {
+          type: vuln.type,
+          payloads: [
+            "<script>alert(1)</script>",
+            "<img src=x onerror=alert(1)>",
+            '"><svg/onload=alert(1)>',
+          ],
+          note: "Payloads demonstrate how unescaped input could be abused.",
+        };
 
       case "Hardcoded Secret":
-        payloads.push({
-          vulnerability: "Hardcoded Secret",
-          simulated: true,
-          payload: "API_KEY=EXPOSED_SECRET_VALUE",
-          note: "SIMULATED example of exposed credential.",
-        });
-        break;
+        return {
+          type: vuln.type,
+          payloads: [
+            "Credential reuse",
+            "Secret leakage via repo history",
+            "CI/CD exposure",
+          ],
+          note: "No payload execution possible. Impact is credential compromise.",
+        };
 
       default:
-        break;
+        return {
+          type: vuln.type,
+          payloads: [],
+          note: "No payloads available for this vulnerability type.",
+        };
     }
-  }
-
-  return payloads;
+  });
 }
